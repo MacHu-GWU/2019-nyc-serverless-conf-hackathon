@@ -13,4 +13,4 @@ app_config.LAMBDA_CODE_S3_KEY.set_value("lambda/MacHu-GWU/sls_hack-project/{}/so
 app_config.LAMBDA_LAYER_ARN.set_value([
     "arn:aws:lambda:us-east-1:700621413265:layer:sls_hack:1"
 ])
-app_config.AWS_PROFILE_FOR_DEPLOY.set_value("eq_sanhe")
+app_config.AWS_PROFILE_FOR_DEPLOY.set_value("eq_hack")
