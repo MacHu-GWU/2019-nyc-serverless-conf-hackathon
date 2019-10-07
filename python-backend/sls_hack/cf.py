@@ -42,7 +42,7 @@ iam_role = iam.Role(
 dynamodb_table_gps_tracker = dynamodb.Table(
     "DynamodbTableGpsTracker",
     template=template,
-    TableName=tm.helper_fn_sub("{}-gps-tracker", param_env_name),
+    TableName=app_config.DYNAMODB_TABLE_NAME_GPS_TRACKER.get_value(),
     KeySchema=[
         dynamodb.KeySchema(
             AttributeName="device_id",
@@ -65,6 +65,31 @@ dynamodb_table_gps_tracker = dynamodb.Table(
     ],
     BillingMode="PAY_PER_REQUEST",
 )
+"""
+Device location history.
+"""
+
+dynamodb_table_device_status = dynamodb.Table(
+    "DynamodbTableDeviceStatus",
+    template=template,
+    TableName=app_config.DYNAMODB_TABLE_NAME_DEVICE_STATUS.get_value(),
+    KeySchema=[
+        dynamodb.KeySchema(
+            AttributeName="device_id",
+            KeyType="HASH",
+        ),
+    ],
+    AttributeDefinitions=[
+        dynamodb.AttributeDefinition(
+            AttributeName="device_id",
+            AttributeType="S",
+        ),
+    ],
+    BillingMode="PAY_PER_REQUEST",
+)
+"""
+Provide lastest status information about a device.
+"""
 
 # dynamodb_table_auth = dynamodb.Table(
 #     "DynamodbTableAuth",

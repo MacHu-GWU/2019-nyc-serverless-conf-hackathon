@@ -1,1 +1,2 @@
 lbdrabbit==0.0.1
+PynamoDB==4.0.0
