@@ -6,3 +6,5 @@ pymongo_mate==0.0.4
 mongoengine_mate==0.0.3
 uszipcode==0.2.3
 loggerFactory==0.0.5
+s3iotools==0.0.3
+pandas==0.24.2

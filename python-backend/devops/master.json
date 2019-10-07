@@ -214,6 +214,22 @@
             },
             "Type": "AWS::ApiGateway::Resource"
         },
+        "AthenaDatabase": {
+            "Metadata": {
+                "labels": [
+                    "AWS::Glue::Database"
+                ]
+            },
+            "Properties": {
+                "CatalogId": {
+                    "Ref": "AWS::AccountId"
+                },
+                "DatabaseInput": {
+                    "Name": "sls_hack_dev"
+                }
+            },
+            "Type": "AWS::Glue::Database"
+        },
         "DynamodbTableDeviceStatus": {
             "Metadata": {
                 "labels": [
@@ -384,6 +400,50 @@
                 ]
             },
             "Type": "AWS::IAM::Role"
+        },
+        "KinesisFirehoseDeliveryStreamEtl": {
+            "Metadata": {
+                "labels": [
+                    "AWS::KinesisFirehose::DeliveryStream"
+                ]
+            },
+            "Properties": {
+                "DeliveryStreamName": {
+                    "Fn::Sub": [
+                        "${EnvironmentName}-etl",
+                        {
+                            "EnvironmentName": {
+                                "Ref": "EnvironmentName"
+                            }
+                        }
+                    ]
+                },
+                "DeliveryStreamType": "KinesisStreamAsSource",
+                "ExtendedS3DestinationConfiguration": {
+                    "BucketARN": {
+                        "Fn::GetAtt": [
+                            "S3BucketForEventRawData",
+                            "Arn"
+                        ]
+                    },
+                    "BufferingHints": {
+                        "IntervalInSeconds": 60,
+                        "SizeInMBs": 6
+                    },
+                    "CompressionFormat": "UNCOMPRESSED",
+                    "RoleARN": "arn:aws:iam::700621413265:role/firehose-admin-role"
+                },
+                "KinesisStreamSourceConfiguration": {
+                    "KinesisStreamARN": {
+                        "Fn::GetAtt": [
+                            "KinesisStreamRawDataIn",
+                            "Arn"
+                        ]
+                    },
+                    "RoleARN": "arn:aws:iam::700621413265:role/firehose-admin-role"
+                }
+            },
+            "Type": "AWS::KinesisFirehose::DeliveryStream"
         },
         "KinesisStreamRawDataIn": {
             "Metadata": {

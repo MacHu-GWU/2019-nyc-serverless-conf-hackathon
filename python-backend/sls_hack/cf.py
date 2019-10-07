@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import troposphere_mate as tm
-from troposphere_mate import apigateway, awslambda, iam, dynamodb, kinesis, s3
+from troposphere_mate import apigateway, awslambda, iam, dynamodb, kinesis, s3, glue, firehose
+from troposphere_mate import Ref, GetAtt, Sub, AWS_ACCOUNT_ID
 from troposphere_mate.canned.iam import AWSManagedPolicyArn, AWSServiceName, create_assume_role_policy_document
 from .app_config_init import app_config
 
@@ -114,15 +115,109 @@ Provide zipcode crime index information for alerting.
 Update regularly from raw dataset.
 """
 
-s3_bucket = s3.Bucket(
+s3_bucket_for_raw_data = s3.Bucket(
     "S3BucketForEventRawData",
     template=template,
     BucketName=tm.helper_fn_sub("eq-hackathon-{}-raw-data", param_env_name),
 )
 
-kinesis_stream = kinesis.Stream(
+kinesis_stream_raw_data_in = kinesis.Stream(
     "KinesisStreamRawDataIn",
     template=template,
     Name=tm.helper_fn_sub("{}-raw-data-in", param_env_name),
     ShardCount=2,
 )
+
+kinesis_firehose_delivery_stream_etl = firehose.DeliveryStream(
+    "KinesisFirehoseDeliveryStreamEtl",
+    template=template,
+    DeliveryStreamName=tm.helper_fn_sub("{}-etl", param_env_name),
+    DeliveryStreamType="KinesisStreamAsSource",
+    KinesisStreamSourceConfiguration=firehose.KinesisStreamSourceConfiguration(
+        KinesisStreamARN=GetAtt(kinesis_stream_raw_data_in, "Arn"),
+        RoleARN="arn:aws:iam::700621413265:role/firehose-admin-role",
+    ),
+    ExtendedS3DestinationConfiguration=firehose.ExtendedS3DestinationConfiguration(
+        BucketARN=GetAtt(s3_bucket_for_raw_data, "Arn"),
+        BufferingHints=firehose.BufferingHints(
+            IntervalInSeconds=60,
+            SizeInMBs=6,
+        ),
+        CompressionFormat="UNCOMPRESSED",
+        RoleARN="arn:aws:iam::700621413265:role/firehose-admin-role",
+    ),
+)
+
+athena_database = glue.Database(
+    "AthenaDatabase",
+    template=template,
+    CatalogId=Ref(AWS_ACCOUNT_ID),
+    DatabaseInput=glue.DatabaseInput(
+        Name=app_config.ENVIRONMENT_NAME.get_value().replace("-", "_")
+    ),
+)
+
+# athena_table_movies = glue.Table(
+#     "AthenaTableMovies",
+#     template=template,
+#     Metadata={
+#         LABEL_FIELD_IN_METADATA: [
+#             Labels.athena_table
+#         ]
+#     },
+#     CatalogId=Ref(AWS_ACCOUNT_ID),
+#     DatabaseName=self.ENVIRONMENT_NAME.get_value().replace("-", "_"),
+#     TableInput=glue.TableInput(
+#         Name="the_movie_db_movies",
+#         StorageDescriptor=glue.StorageDescriptor(
+#             Columns=[
+#                 glue.Column(
+#                     Name="imdb_id",
+#                     Type="string",
+#                 ),
+#                 glue.Column(
+#                     Name="id",
+#                     Type="int",
+#                 ),
+#                 glue.Column(
+#                     Name="original_title",
+#                     Type="string",
+#                 ),
+#                 glue.Column(
+#                     Name="overview",
+#                     Type="string",
+#                 ),
+#                 glue.Column(
+#                     Name="genres",
+#                     Type="array<struct<id:int,name:string>>",
+#                 ),
+#                 glue.Column(
+#                     Name="credits",
+#                     Type="struct<cast:array<struct<id:int,name:string,character:string,job:string>>,crew:array<struct<id:int,name:string,character:string,job:string>>>",
+#                 ),
+#             ],
+#             Compressed=False,
+#             InputFormat="org.apache.hadoop.mapred.TextInputFormat",
+#             OutputFormat="org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat",
+#             Location=Sub(
+#                 "s3://${bucket_name}/data/crime",
+#                 {
+#                     "bucket_name": tm.helper_fn_sub("eq-hackathon-{}-raw-data", param_env_name)
+#                 }
+#             ),
+#             BucketColumns=[],
+#             SerdeInfo=glue.SerdeInfo(
+#                 SerializationLibrary="org.openx.data.jsonserde.JsonSerDe",
+#                 Parameters={"serialization.format": "1"},
+#             ),
+#         ),
+#         TableType="EXTERNAL_TABLE",
+#         Parameters={
+#             "EXTERNAL": "TRUE",
+#             "has_encrypted_data": "false",
+#         },
+#     ),
+#     DependsOn=[
+#         self.athena_database
+#     ],
+# )
