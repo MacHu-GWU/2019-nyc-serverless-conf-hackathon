@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import troposphere_mate as tm
-from troposphere_mate import apigateway, awslambda, iam, dynamodb, sns
+from troposphere_mate import apigateway, awslambda, iam, dynamodb, kinesis, s3
 from troposphere_mate.canned.iam import AWSManagedPolicyArn, AWSServiceName, create_assume_role_policy_document
 from .app_config_init import app_config
 
@@ -91,7 +91,6 @@ dynamodb_table_device_status = dynamodb.Table(
 Provide lastest status information about a device.
 """
 
-
 dynamodb_table_zipcode_crime_index = dynamodb.Table(
     "DynamodbTableZipcodeCrimeIndex",
     template=template,
@@ -114,3 +113,16 @@ dynamodb_table_zipcode_crime_index = dynamodb.Table(
 Provide zipcode crime index information for alerting.
 Update regularly from raw dataset.
 """
+
+s3_bucket = s3.Bucket(
+    "S3BucketForEventRawData",
+    template=template,
+    BucketName=tm.helper_fn_sub("eq-hackathon-{}-raw-data", param_env_name),
+)
+
+kinesis_stream = kinesis.Stream(
+    "KinesisStreamRawDataIn",
+    template=template,
+    Name=tm.helper_fn_sub("{}-raw-data-in", param_env_name),
+    ShardCount=2,
+)

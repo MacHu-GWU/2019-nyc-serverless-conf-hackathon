@@ -6,6 +6,252 @@
         }
     },
     "Resources": {
+        "ApigwAuthorizerAuth": {
+            "DependsOn": [
+                "LbdFuncAuthHandler",
+                "RestApi"
+            ],
+            "Metadata": {
+                "labels": [
+                    "AWS::ApiGateway::Authorizer"
+                ]
+            },
+            "Properties": {
+                "AuthType": "custom",
+                "AuthorizerResultTtlInSeconds": 300,
+                "AuthorizerUri": {
+                    "Fn::Sub": [
+                        "arn:aws:apigateway:${Region}:lambda:path/2015-03-31/functions/${AuthorizerFunctionArn}/invocations",
+                        {
+                            "AuthorizerFunctionArn": {
+                                "Fn::GetAtt": [
+                                    "LbdFuncAuthHandler",
+                                    "Arn"
+                                ]
+                            },
+                            "Region": {
+                                "Ref": "AWS::Region"
+                            }
+                        }
+                    ]
+                },
+                "IdentitySource": "method.request.header.auth",
+                "Name": "ApigwAuthorizerAuth",
+                "RestApiId": {
+                    "Ref": "RestApi"
+                },
+                "Type": "TOKEN"
+            },
+            "Type": "AWS::ApiGateway::Authorizer"
+        },
+        "ApigwMethodRpcGpsTrackerHandler": {
+            "DependsOn": [
+                "ApigwResourceRpcGpsTracker",
+                "LbdFuncRpcGpsTrackerHandler",
+                "ApigwAuthorizerAuth"
+            ],
+            "Metadata": {
+                "labels": [
+                    "AWS::ApiGateway::Method"
+                ]
+            },
+            "Properties": {
+                "AuthorizationType": "CUSTOM",
+                "AuthorizerId": {
+                    "Ref": "ApigwAuthorizerAuth"
+                },
+                "HttpMethod": "POST",
+                "Integration": {
+                    "IntegrationHttpMethod": "POST",
+                    "IntegrationResponses": [
+                        {
+                            "ContentHandling": "CONVERT_TO_TEXT",
+                            "ResponseParameters": {
+                                "method.response.header.Access-Control-Allow-Origin": "'*'"
+                            },
+                            "ResponseTemplates": {
+                                "application/json": ""
+                            },
+                            "StatusCode": "200"
+                        }
+                    ],
+                    "RequestTemplates": {
+                        "application/json": "$input.json('$')"
+                    },
+                    "Type": "AWS",
+                    "Uri": {
+                        "Fn::Sub": [
+                            "arn:aws:apigateway:${Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations",
+                            {
+                                "LambdaArn": {
+                                    "Fn::GetAtt": [
+                                        "LbdFuncRpcGpsTrackerHandler",
+                                        "Arn"
+                                    ]
+                                },
+                                "Region": {
+                                    "Ref": "AWS::Region"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "MethodResponses": [
+                    {
+                        "ResponseModels": {
+                            "application/json": "Empty"
+                        },
+                        "ResponseParameters": {
+                            "method.response.header.Access-Control-Allow-Origin": false
+                        },
+                        "StatusCode": "200"
+                    }
+                ],
+                "ResourceId": {
+                    "Ref": "ApigwResourceRpcGpsTracker"
+                },
+                "RestApiId": {
+                    "Ref": "RestApi"
+                }
+            },
+            "Type": "AWS::ApiGateway::Method"
+        },
+        "ApigwMethodRpcGpsTrackerOptions": {
+            "DependsOn": [
+                "ApigwResourceRpcGpsTracker"
+            ],
+            "Metadata": {
+                "labels": [
+                    "AWS::ApiGateway::Method"
+                ]
+            },
+            "Properties": {
+                "AuthorizationType": "NONE",
+                "HttpMethod": "OPTIONS",
+                "Integration": {
+                    "IntegrationResponses": [
+                        {
+                            "ContentHandling": "CONVERT_TO_TEXT",
+                            "ResponseParameters": {
+                                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,auth'",
+                                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,POST'",
+                                "method.response.header.Access-Control-Allow-Origin": "'*'"
+                            },
+                            "ResponseTemplates": {
+                                "application/json": ""
+                            },
+                            "StatusCode": "200"
+                        }
+                    ],
+                    "PassthroughBehavior": "WHEN_NO_MATCH",
+                    "RequestTemplates": {
+                        "application/json": "{\"statusCode\": 200}"
+                    },
+                    "Type": "MOCK"
+                },
+                "MethodResponses": [
+                    {
+                        "ResponseModels": {
+                            "application/json": "Empty"
+                        },
+                        "ResponseParameters": {
+                            "method.response.header.Access-Control-Allow-Headers": false,
+                            "method.response.header.Access-Control-Allow-Methods": false,
+                            "method.response.header.Access-Control-Allow-Origin": false
+                        },
+                        "StatusCode": "200"
+                    }
+                ],
+                "ResourceId": {
+                    "Ref": "ApigwResourceRpcGpsTracker"
+                },
+                "RestApiId": {
+                    "Ref": "RestApi"
+                }
+            },
+            "Type": "AWS::ApiGateway::Method"
+        },
+        "ApigwResourceRpc": {
+            "DependsOn": [
+                "RestApi"
+            ],
+            "Metadata": {
+                "labels": [
+                    "AWS::ApiGateway::Resource"
+                ]
+            },
+            "Properties": {
+                "ParentId": {
+                    "Fn::GetAtt": [
+                        "RestApi",
+                        "RootResourceId"
+                    ]
+                },
+                "PathPart": "rpc",
+                "RestApiId": {
+                    "Ref": "RestApi"
+                }
+            },
+            "Type": "AWS::ApiGateway::Resource"
+        },
+        "ApigwResourceRpcGpsTracker": {
+            "DependsOn": [
+                "RestApi"
+            ],
+            "Metadata": {
+                "labels": [
+                    "AWS::ApiGateway::Resource"
+                ]
+            },
+            "Properties": {
+                "ParentId": {
+                    "Ref": "ApigwResourceRpc"
+                },
+                "PathPart": "gps-tracker",
+                "RestApiId": {
+                    "Ref": "RestApi"
+                }
+            },
+            "Type": "AWS::ApiGateway::Resource"
+        },
+        "DynamodbTableDeviceStatus": {
+            "Metadata": {
+                "labels": [
+                    "AWS::DynamoDB::Table"
+                ]
+            },
+            "Properties": {
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "device_id",
+                        "AttributeType": "S"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST",
+                "KeySchema": [
+                    {
+                        "AttributeName": "device_id",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "TableName": "sls-hack-dev-device-status",
+                "Tags": [
+                    {
+                        "Key": "Project",
+                        "Value": "sls-hack"
+                    },
+                    {
+                        "Key": "Stage",
+                        "Value": "dev"
+                    },
+                    {
+                        "Key": "EnvName",
+                        "Value": "sls-hack-dev"
+                    }
+                ]
+            },
+            "Type": "AWS::DynamoDB::Table"
+        },
         "DynamodbTableGpsTracker": {
             "Metadata": {
                 "labels": [
@@ -34,16 +280,45 @@
                         "KeyType": "RANGE"
                     }
                 ],
-                "TableName": {
-                    "Fn::Sub": [
-                        "${EnvironmentName}-gps-tracker",
-                        {
-                            "EnvironmentName": {
-                                "Ref": "EnvironmentName"
-                            }
-                        }
-                    ]
-                },
+                "TableName": "sls-hack-dev-gps-tracker",
+                "Tags": [
+                    {
+                        "Key": "Project",
+                        "Value": "sls-hack"
+                    },
+                    {
+                        "Key": "Stage",
+                        "Value": "dev"
+                    },
+                    {
+                        "Key": "EnvName",
+                        "Value": "sls-hack-dev"
+                    }
+                ]
+            },
+            "Type": "AWS::DynamoDB::Table"
+        },
+        "DynamodbTableZipcodeCrimeIndex": {
+            "Metadata": {
+                "labels": [
+                    "AWS::DynamoDB::Table"
+                ]
+            },
+            "Properties": {
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "zipcode",
+                        "AttributeType": "S"
+                    }
+                ],
+                "BillingMode": "PAY_PER_REQUEST",
+                "KeySchema": [
+                    {
+                        "AttributeName": "zipcode",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "TableName": "sls-hack-dev-zipcode-crime-index",
                 "Tags": [
                     {
                         "Key": "Project",
@@ -110,6 +385,220 @@
             },
             "Type": "AWS::IAM::Role"
         },
+        "KinesisStreamRawDataIn": {
+            "Metadata": {
+                "labels": [
+                    "AWS::Kinesis::Stream"
+                ]
+            },
+            "Properties": {
+                "Name": {
+                    "Fn::Sub": [
+                        "${EnvironmentName}-raw-data-in",
+                        {
+                            "EnvironmentName": {
+                                "Ref": "EnvironmentName"
+                            }
+                        }
+                    ]
+                },
+                "ShardCount": 2,
+                "Tags": [
+                    {
+                        "Key": "Project",
+                        "Value": "sls-hack"
+                    },
+                    {
+                        "Key": "Stage",
+                        "Value": "dev"
+                    },
+                    {
+                        "Key": "EnvName",
+                        "Value": "sls-hack-dev"
+                    }
+                ]
+            },
+            "Type": "AWS::Kinesis::Stream"
+        },
+        "LbdFuncAuthHandler": {
+            "Metadata": {
+                "labels": [
+                    "AWS::Lambda::Function"
+                ]
+            },
+            "Properties": {
+                "Code": {
+                    "S3Bucket": "eq-hackathon-for-everything",
+                    "S3Key": "lambda/MacHu-GWU/sls_hack-project/0.0.1/source.zip"
+                },
+                "FunctionName": {
+                    "Fn::Sub": [
+                        "${EnvironmentName}-auth-handler",
+                        {
+                            "EnvironmentName": {
+                                "Ref": "EnvironmentName"
+                            }
+                        }
+                    ]
+                },
+                "Handler": "sls_hack.handlers.auth.handler",
+                "Layers": [
+                    "arn:aws:lambda:us-east-1:700621413265:layer:sls_hack:6"
+                ],
+                "Role": {
+                    "Fn::GetAtt": [
+                        "IamRoleForLbdFunc",
+                        "Arn"
+                    ]
+                },
+                "Runtime": "python3.6",
+                "Tags": [
+                    {
+                        "Key": "Project",
+                        "Value": "sls-hack"
+                    },
+                    {
+                        "Key": "Stage",
+                        "Value": "dev"
+                    },
+                    {
+                        "Key": "EnvName",
+                        "Value": "sls-hack-dev"
+                    }
+                ],
+                "Timeout": 30
+            },
+            "Type": "AWS::Lambda::Function"
+        },
+        "LbdFuncRpcGpsTrackerHandler": {
+            "Metadata": {
+                "labels": [
+                    "AWS::Lambda::Function"
+                ]
+            },
+            "Properties": {
+                "Code": {
+                    "S3Bucket": "eq-hackathon-for-everything",
+                    "S3Key": "lambda/MacHu-GWU/sls_hack-project/0.0.1/source.zip"
+                },
+                "FunctionName": {
+                    "Fn::Sub": [
+                        "${EnvironmentName}-rpc-gps-tracker-handler",
+                        {
+                            "EnvironmentName": {
+                                "Ref": "EnvironmentName"
+                            }
+                        }
+                    ]
+                },
+                "Handler": "sls_hack.handlers.rpc.gps_tracker.handler",
+                "Layers": [
+                    "arn:aws:lambda:us-east-1:700621413265:layer:sls_hack:6"
+                ],
+                "Role": {
+                    "Fn::GetAtt": [
+                        "IamRoleForLbdFunc",
+                        "Arn"
+                    ]
+                },
+                "Runtime": "python3.6",
+                "Tags": [
+                    {
+                        "Key": "Project",
+                        "Value": "sls-hack"
+                    },
+                    {
+                        "Key": "Stage",
+                        "Value": "dev"
+                    },
+                    {
+                        "Key": "EnvName",
+                        "Value": "sls-hack-dev"
+                    }
+                ],
+                "Timeout": 30
+            },
+            "Type": "AWS::Lambda::Function"
+        },
+        "LbdPermissionApigwAuthorizerAuth": {
+            "DependsOn": [
+                "ApigwAuthorizerAuth",
+                "LbdFuncAuthHandler"
+            ],
+            "Metadata": {
+                "labels": [
+                    "AWS::Lambda::Permission"
+                ]
+            },
+            "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "LbdFuncAuthHandler",
+                        "Arn"
+                    ]
+                },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {
+                    "Fn::Sub": [
+                        "arn:aws:execute-api:${Region}:${AccountId}:${RestApiId}/authorizers/${AuthorizerId}",
+                        {
+                            "AccountId": {
+                                "Ref": "AWS::AccountId"
+                            },
+                            "AuthorizerId": {
+                                "Ref": "ApigwAuthorizerAuth"
+                            },
+                            "Region": {
+                                "Ref": "AWS::Region"
+                            },
+                            "RestApiId": {
+                                "Ref": "RestApi"
+                            }
+                        }
+                    ]
+                }
+            },
+            "Type": "AWS::Lambda::Permission"
+        },
+        "LbdPermissionApigwMethodRpcGpsTrackerHandler": {
+            "DependsOn": [
+                "ApigwMethodRpcGpsTrackerHandler",
+                "LbdFuncRpcGpsTrackerHandler"
+            ],
+            "Metadata": {
+                "labels": [
+                    "AWS::Lambda::Permission"
+                ]
+            },
+            "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "LbdFuncRpcGpsTrackerHandler",
+                        "Arn"
+                    ]
+                },
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {
+                    "Fn::Sub": [
+                        "arn:aws:execute-api:${Region}:${AccountId}:${RestApiId}/*/POST/rpc/gps-tracker",
+                        {
+                            "AccountId": {
+                                "Ref": "AWS::AccountId"
+                            },
+                            "Region": {
+                                "Ref": "AWS::Region"
+                            },
+                            "RestApiId": {
+                                "Ref": "RestApi"
+                            }
+                        }
+                    ]
+                }
+            },
+            "Type": "AWS::Lambda::Permission"
+        },
         "RestApi": {
             "Metadata": {
                 "labels": [
@@ -134,6 +623,40 @@
                 }
             },
             "Type": "AWS::ApiGateway::RestApi"
+        },
+        "S3BucketForEventRawData": {
+            "Metadata": {
+                "labels": [
+                    "AWS::S3::Bucket"
+                ]
+            },
+            "Properties": {
+                "BucketName": {
+                    "Fn::Sub": [
+                        "eq-hackathon-${EnvironmentName}-raw-data",
+                        {
+                            "EnvironmentName": {
+                                "Ref": "EnvironmentName"
+                            }
+                        }
+                    ]
+                },
+                "Tags": [
+                    {
+                        "Key": "Project",
+                        "Value": "sls-hack"
+                    },
+                    {
+                        "Key": "Stage",
+                        "Value": "dev"
+                    },
+                    {
+                        "Key": "EnvName",
+                        "Value": "sls-hack-dev"
+                    }
+                ]
+            },
+            "Type": "AWS::S3::Bucket"
         }
     }
 }

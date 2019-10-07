@@ -2,6 +2,7 @@
 sls_hack_venv/
 sls_hack.egg-info/
 sls_hack-*/
+playground/
 
 
 # Byte-compiled / optimized / DLL files
