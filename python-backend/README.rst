@@ -10,14 +10,14 @@ What Problem Does this App Solve
 
 **Send Notification to Parent when Kids going to a Dangerous Zipcode, High Rate on Crime Report**.
 
+Dataset: Jan to June, 223,000 crime report data
+
+- https://www1.nyc.gov/site/nypd/stats/crime-statistics/citywide-crime-stats.page
+
 Demo App:
 
 - App Endpoint: http://ui-nyc-serverless-conf-hackathon.s3-website-us-east-1.amazonaws.com/#/login
 - Login: both ``dd@dd.com``
-
-Dataset: Jan to June, 223,000 crime report data
-
-- https://www1.nyc.gov/site/nypd/stats/crime-statistics/citywide-crime-stats.page
 
 Test Case:
 
