@@ -1,9 +1,8 @@
 {
     "PROJECT_NAME": "sls_hack",
-    "AWS_PROFILE_FOR_DOC_DEPLOY": "an-aws-project-name",
-    "S3_BUCKET_FOR_DOC_HOST": "a-s3-bucket-name",
+    "AWS_PROFILE_FOR_DOC_DEPLOY": "eq_hack",
+    "S3_BUCKET_FOR_DOC_HOST": "eq-hackathon-for-everything",
     
     "AWS_PROFILE_FOR_DEPLOY": "eq_hack",
     "S3_BUCKET_FOR_DEPLOY": "eq-hackathon-for-everything"
-    
 }
