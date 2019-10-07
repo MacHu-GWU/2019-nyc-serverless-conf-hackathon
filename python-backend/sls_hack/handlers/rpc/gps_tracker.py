@@ -60,10 +60,11 @@ def handler(event, context):
 
     logger.info("response {}".format(body))
 
-    return {
-        "status_code": "200",
-        "body": body
-    }
+    return body
+    # return {
+    #     "status_code": "200",
+    #     "body": body
+    # }
 
 
 if __name__ == "__main__":
