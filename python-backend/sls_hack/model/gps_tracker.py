@@ -29,6 +29,14 @@ class DeviceStatus(Model):
     phone_number = UnicodeAttribute()
 
 
+class ZipcodeCrimeIndex(Model):
+    class Meta:
+        table_name = app_config.DYNAMODB_TABLE_NAME_ZIPCODE_CRIME_INDEX.get_value()
+
+    zipcode = UnicodeAttribute(hash_key=True)
+    crime_level = NumberAttribute()
+
+
 if __name__ == "__main__":
     import uuid
     from datetime import datetime
