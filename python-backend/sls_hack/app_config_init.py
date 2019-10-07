@@ -11,6 +11,6 @@ app_config.S3_BUCKET_FOR_DEPLOY.set_value("eq-hackathon-for-everything")
 app_config.LAMBDA_CODE_S3_BUCKET.set_value(app_config.S3_BUCKET_FOR_DEPLOY.get_value())
 app_config.LAMBDA_CODE_S3_KEY.set_value("lambda/MacHu-GWU/sls_hack-project/{}/source.zip".format(__version__))
 app_config.LAMBDA_LAYER_ARN.set_value([
-    "arn:aws:lambda:us-east-1:700621413265:layer:sls_hack:2"
+    "arn:aws:lambda:us-east-1:700621413265:layer:sls_hack:6"
 ])
 app_config.AWS_PROFILE_FOR_DEPLOY.set_value("eq_hack")

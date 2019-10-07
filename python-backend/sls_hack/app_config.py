@@ -10,9 +10,15 @@ class SlsHackAppConfig(AppConfig):
     def get_DYNAMODB_TABLE_NAME_GPS_TRACKER(self):
         return "{}-gps-tracker".format(self.ENVIRONMENT_NAME.get_value())
 
-    DYNAMODB_TABLE_NAME_DEVICE_STATUS= Derivable()
+    DYNAMODB_TABLE_NAME_DEVICE_STATUS = Derivable()
 
     @DYNAMODB_TABLE_NAME_DEVICE_STATUS.getter
     def get_DYNAMODB_TABLE_NAME_DEVICE_STATUS(self):
         return "{}-device-status".format(self.ENVIRONMENT_NAME.get_value())
+
+    DYNAMODB_TABLE_NAME_ZIPCODE_CRIME_INDEX = Derivable()
+
+    @DYNAMODB_TABLE_NAME_ZIPCODE_CRIME_INDEX.getter
+    def get_DYNAMODB_TABLE_NAME_ZIPCODE_CRIME_INDEX(self):
+        return "{}-zipcode-crime-index".format(self.ENVIRONMENT_NAME.get_value())
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import troposphere_mate as tm
-from troposphere_mate import apigateway, awslambda, iam, dynamodb
+from troposphere_mate import apigateway, awslambda, iam, dynamodb, sns
 from troposphere_mate.canned.iam import AWSManagedPolicyArn, AWSServiceName, create_assume_role_policy_document
 from .app_config_init import app_config
 
@@ -91,33 +91,26 @@ dynamodb_table_device_status = dynamodb.Table(
 Provide lastest status information about a device.
 """
 
-# dynamodb_table_auth = dynamodb.Table(
-#     "DynamodbTableAuth",
-#     template=template,
-#     TableName=tm.helper_fn_sub("{}-auth", param_env_name),
-#     KeySchema=[
-#         dynamodb.KeySchema(
-#             AttributeName="device_id",
-#             KeyType="HASH",
-#         ),
-#         dynamodb.KeySchema(
-#             AttributeName="create_at",
-#             KeyType="RANGE",
-#         ),
-#     ],
-#     AttributeDefinitions=[
-#         dynamodb.AttributeDefinition(
-#             AttributeName="device_id",
-#             AttributeType="S",
-#         ),
-#         dynamodb.AttributeDefinition(
-#             AttributeName="create_at",
-#             AttributeType="S",
-#         ),
-#         dynamodb.AttributeDefinition(
-#             AttributeName="token",
-#             AttributeType="S",
-#         ),
-#     ],
-#     BillingMode="PAY_PER_REQUEST",
-# )
+
+dynamodb_table_zipcode_crime_index = dynamodb.Table(
+    "DynamodbTableZipcodeCrimeIndex",
+    template=template,
+    TableName=app_config.DYNAMODB_TABLE_NAME_ZIPCODE_CRIME_INDEX.get_value(),
+    KeySchema=[
+        dynamodb.KeySchema(
+            AttributeName="zipcode",
+            KeyType="HASH",
+        ),
+    ],
+    AttributeDefinitions=[
+        dynamodb.AttributeDefinition(
+            AttributeName="zipcode",
+            AttributeType="S",
+        ),
+    ],
+    BillingMode="PAY_PER_REQUEST",
+)
+"""
+Provide zipcode crime index information for alerting.
+Update regularly from raw dataset.
+"""

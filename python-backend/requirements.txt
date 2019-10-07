@@ -4,3 +4,5 @@ pymongo
 mongoengine
 pymongo_mate==0.0.4
 mongoengine_mate==0.0.3
+uszipcode==0.2.3
+loggerFactory==0.0.5
