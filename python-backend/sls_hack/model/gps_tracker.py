@@ -34,7 +34,11 @@ class ZipcodeCrimeIndex(Model):
         table_name = app_config.DYNAMODB_TABLE_NAME_ZIPCODE_CRIME_INDEX.get_value()
 
     zipcode = UnicodeAttribute(hash_key=True)
-    crime_level = NumberAttribute()
+    num_cases = NumberAttribute()
+    land_area = NumberAttribute()
+    crime_per_sqmi = NumberAttribute()
+    percentile_rank = NumberAttribute()
+    crime_index = UnicodeAttribute()
 
 
 if __name__ == "__main__":
