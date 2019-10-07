@@ -8,6 +8,10 @@ Crime Alert For Parent to protect Kids from Dangerous Zipcode
 What Problem Does this App Solve
 ------------------------------------------------------------------------------
 
+- App Endpoint: http://ui-nyc-serverless-conf-hackathon.s3-website-us-east-1.amazonaws.com/#/login
+- Login: both ``dd@dd.com``
+
+
 - IOT
 
 Dataset: Jan to June, 223,000 crime report data
