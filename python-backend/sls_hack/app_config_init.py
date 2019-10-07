@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from lbdrabbit import __version__
+from sls_hack import __version__
 from .app_config import SlsHackAppConfig
 
 app_config = SlsHackAppConfig()

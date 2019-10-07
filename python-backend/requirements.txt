@@ -1,2 +1,6 @@
 lbdrabbit==0.0.1
 PynamoDB==4.0.0
+pymongo
+mongoengine
+pymongo_mate==0.0.4
+mongoengine_mate==0.0.3

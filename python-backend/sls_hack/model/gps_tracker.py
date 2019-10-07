@@ -26,11 +26,12 @@ if __name__ == "__main__":
     print(uuid.uuid4())
     device_id = "de042ca7-3bd0-4d66-8690-d88312d18cef"
     create_at = str(datetime.utcnow())
+    print(create_at)
     lat, lng = 40.702962, -74.011626
     item = GpsTracker(
         device_id=device_id,
         create_at=create_at,
         lat=lat, lng=lng,
     )
-    response = item.save()
-    print(response)
+    # response = item.save()
+    # print(response)
